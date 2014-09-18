@@ -1,0 +1,16 @@
+2014-09-18 22:13:55
+当前目标：
+能输入中英文
+能换行（硬换行）
+能自动换行（软换行）
+不能删除
+不能移动光标（只能在尾部插入）
+
+2014-09-18 22:36:01
+inputMethodEvent能够触发的条件是
+QWidget.setAttribute(Qt.WA_InputMethodEnabled)
+QWidget.hasFocus()
+
+drawText() 可以自动wrap汉字，但对连续英文并不会
+所以需要自己处理每个字符的绘制
+text layout?
