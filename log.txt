@@ -17,3 +17,39 @@ text layout?
 
 2015-01-28 21:20:13
 重新开始，希望能每天写上一点，直到能开eno(目前的想法是edi写到富文本编辑器的地步就开eno)
+
+好久以来重拾python手特别生，qt也是，，一步步来
+简单目标：
+[goal done]
+按键能在窗口中显示英文
+
+ctrl, shift 之类按键在 keyPressEvent() 的 .text() 是空字符串，所以验证是否 printable 需要：
+if ch and ch in string.printable
+
+[goal done]
+添加 backspace、回车功能，在 console 中显示字符串，例如：
+********************
+*hello world       *
+*this is a test    *
+*                  *
+********************
+星号是模拟的窗口
+
+ctrl-j 是 \r
+ctrl-m 是 \n
+backspace 是 0x08
+
+\r 也在string.printable里(属于whitespace)，\n不属于，，那么对字符要优先判断是否是回车
+
+2015-01-28 23:23:57
+下一步比较复杂了(在widget中显示)，想做得好可能涉及到QTextLayout
+
+貌似QTextLayout不会自己handle new line？那么 .createLine() 创建的原来不是文本中的“行(以换行符为界)”，而是paint device中的“行(以宽度为界)”？
+让我试验一下
+
+还真是
+
+2015-01-28 23:59:21
+done，不过写得比较乱——各种实验修修改改才ok起来，，不过可以在widget中显示英文了，backspace和回车也能用
+接下来的任务或者搞中文或者仔细研究下QTextLayout
+睡了
