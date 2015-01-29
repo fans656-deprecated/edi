@@ -33,6 +33,8 @@ class Widget(QDialog):
         self.layouts = []
         for line in lines:
             self.layoutLine(line)
+            print line
+        print '*' * 40
 
     def layoutLine(self, line):
         fm = self.fontMetrics()
@@ -40,6 +42,11 @@ class Widget(QDialog):
         leading = fm.leading()
         y = 0.0
         lt = QTextLayout(line)
+        to = lt.textOption()
+        to.setWrapMode(QTextOption.WrapAnywhere)
+        print fm.height(), fm.maxWidth()
+        to.setTabStop(fm.width(' ') * 8)
+        lt.setTextOption(to)
         lt.setFont(self.font())
         lt.setCacheEnabled(True)
         lt.beginLayout()
@@ -61,12 +68,10 @@ class Widget(QDialog):
         for lt in self.layouts:
             lt.draw(painter, pt)
             pt.setY(pt.y() + lt.boundingRect().height())
-            print pt, lt.position()
-        print '*' * 40
 
 app = QApplication(sys.argv)
 w = Widget()
-w.setFont(QFont('Arial', 50))
+w.setFont(QFont('Courier New', 50))
 w.resize(480, 320)
 w.show()
 app.exec_()

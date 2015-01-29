@@ -61,3 +61,40 @@ done，不过写得比较乱——各种实验修修改改才ok起来，，不�
 把layout放在paintEvent里就可以保证widget size改变时重新layout
 
 layout的boundingRect基本上只有width、height等有意义，多行layout时position要每一个加上上一layout的height
+
+下面尝试一下更改word wrap的形式——改成字符wrap
+
+QTextLayout不会handle tab——呃，好像是还有个QTextOption需要设置？
+
+QTextDocument是更高层的工具，QTextLayout相当于只负责document中的一个element
+但我不确定自己是不是要直接使用这么高层的工具，，更想自己从底层写起
+
+通过QTextOption可以设置wrap mode
+
+
+有点儿明白QTextLayout的意思了，它就像一个盒子，装了些字符，把它们排列起来
+至于这个盒子往哪里画，仍是画的时候才指定的——也就是说，盒子中字符的位置都是相对的
+上面是因为下一步打算做scroll，想了想琢磨出来的
+
+恩...做scroll涉及到“保证哪个位置必须可见”的问题(呃，我是说正常打字的情况下，不用滚轮)，这就牵扯到光标，，那么下一步有好几项：
+
+[goal]
+光标
+    delete、方向键
+scroll (vertical - 因为图形行都会自动wrap)
+
+顺便想远一点：
+[goal]
+中文支持
+文件读写
+行号
+复制、粘贴
+undo/redo
+字体(字号)
+背景色、前景色
+edit/view
+图片(view中是图片，edit中是文件地址或文件hash)
+    进一步：资源链接
+历史记录
+
+到这里差不多就能转eno了，啊哈哈哈哈
