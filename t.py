@@ -7,14 +7,6 @@ from PySide.QtGui import *
 
 import util
 
-def show(text):
-    n = 79
-    print '*' * n
-    for line in text.split('\n'):
-        print '*' + line + ' ' * max(0, n - len(line) - 2) + '*'
-    print '*' * n
-    print
-
 class Widget(QDialog):
 
     __metaclass__ = util.metaclass
@@ -34,14 +26,13 @@ class Widget(QDialog):
             self.text = self.text[:-1]
         elif ch and ch in string.printable:
             self.text += ch
-        self.layout()
+        self.update()
 
     def layout(self):
         lines = self.text.split('\n')
         self.layouts = []
         for line in lines:
             self.layoutLine(line)
-        self.update()
 
     def layoutLine(self, line):
         fm = self.fontMetrics()
@@ -49,6 +40,7 @@ class Widget(QDialog):
         leading = fm.leading()
         y = 0.0
         lt = QTextLayout(line)
+        lt.setFont(self.font())
         lt.setCacheEnabled(True)
         lt.beginLayout()
         while True:
@@ -63,14 +55,18 @@ class Widget(QDialog):
         self.layouts.append(lt)
 
     def paintEvent(self, ev):
+        self.layout()
         painter = QPainter(self)
         pt = QPoint(0, 0)
         for lt in self.layouts:
             lt.draw(painter, pt)
-            pt.setY(pt.y() + self.fm.leading() + self.fm.height())
-        show(self.text)
+            pt.setY(pt.y() + lt.boundingRect().height())
+            print pt, lt.position()
+        print '*' * 40
 
 app = QApplication(sys.argv)
 w = Widget()
+w.setFont(QFont('Arial', 50))
+w.resize(480, 320)
 w.show()
 app.exec_()

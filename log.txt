@@ -53,3 +53,11 @@ backspace 是 0x08
 done，不过写得比较乱——各种实验修修改改才ok起来，，不过可以在widget中显示英文了，backspace和回车也能用
 接下来的任务或者搞中文或者仔细研究下QTextLayout
 睡了
+
+2015-01-29 12:46:27
+很长的一行word wrap后，下面的行会与本行重合
+另外，widget改变size后没有重新layout
+
+把layout放在paintEvent里就可以保证widget size改变时重新layout
+
+layout的boundingRect基本上只有width、height等有意义，多行layout时position要每一个加上上一layout的height
