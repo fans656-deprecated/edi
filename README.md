@@ -5,4 +5,4 @@
 - A (not only text) editor at least comparable with vim/emacs
 
 ## Status
-- nothing has began. Orz
+- Progressing

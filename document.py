@@ -5,7 +5,12 @@ class Document(object):
         self.iLine = 0
         self.iCol = 0
 
-    def setText(self, text):
+    @property
+    def text(self):
+        return '\n'.join(self.lines)
+
+    @text.setter
+    def text(self, text):
         self.lines = text.split('\n')
 
     def put(self, o):
@@ -26,6 +31,10 @@ class Document(object):
         line = line[:i] + s + line[i:]
         self.lines[self.iLine] = line
         self.iCol += len(s)
+        self.controller.notify({
+            'type': 'linechange',
+            'indexes': [self.iLine]
+            })
 
     def newLine(self):
         line = self.line()
@@ -34,6 +43,16 @@ class Document(object):
         self.iLine += 1
         self.lines.insert(self.iLine, b)
         self.adjustCursorInLine()
+
+        if len(b):
+            self.controller.notify({
+                'type': 'linechange',
+                'indexes': [self.iLine - 1]
+                })
+        self.controller.notify({
+            'type': 'newline',
+            'index': self.iLine
+            })
 
     def delBack(self, what='char'):
         if what == 'char':
@@ -44,15 +63,25 @@ class Document(object):
                     self.joinLines(self.iLine, 2)
             else:
                 a, b = self.lineParts()
-                print repr(a), repr(b)
-                print repr(a[:-1] + b)
                 self.line(a[:-1] + b)
                 self.iCol -= 1
+                self.controller.notify({
+                    'type': 'linechange',
+                    'indexes': [self.iLine]
+                    })
 
     def joinLines(self, beg, n):
         if beg >= 0:
             self.lines[beg] = ''.join(self.lines[beg:beg + n])
             del self.lines[beg + 1:beg + n]
+            self.controller.notify({
+                'type': 'linechange',
+                'indexes': [self.iLine]
+                })
+            self.controller.notify({
+                'type': 'delline',
+                'indexes': [beg + i for i in range(1, n)]
+                })
 
     def delForward(self, what):
         if what == 'char':
@@ -71,19 +100,23 @@ class Document(object):
         if self.iLine > 0:
             self.iLine -= 1
             self.adjustCursorInLine()
+            self.notifyCursorChange()
 
     def cursorDown(self):
         if self.iLine + 1 < len(self.lines):
             self.iLine += 1
             self.adjustCursorInLine()
+            self.notifyCursorChange()
 
     def cursorLeft(self):
         if self.iCol == 0:
             if self.iLine > 0:
                 self.iLine -= 1
                 self.iCol = len(self.line())
+                self.notifyCursorChange()
         else:
             self.iCol -= 1
+            self.notifyCursorChange()
 
     def cursorRight(self):
         lenLine = len(self.line())
@@ -91,8 +124,15 @@ class Document(object):
             if self.iLine < len(self.lines):
                 self.iLine += 1
                 self.iCol = 0
+                self.notifyCursorChange()
         else:
             self.iCol += 1
+            self.notifyCursorChange()
+
+    def notifyCursorChange(self):
+        self.controller.notify({
+            'type': 'cursorchange'
+            })
 
     def adjustCursorInLine(self):
         lenLine = len(self.line())
