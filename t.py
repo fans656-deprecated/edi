@@ -6,6 +6,14 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 import util
+import document
+
+text = '''\
+hello world
+this is just a test a   b
+and what do you want?
+you me evo\
+'''
 
 class Widget(QDialog):
 
@@ -13,28 +21,44 @@ class Widget(QDialog):
 
     def __init__(self, parent=None):
         self.super().__init__(parent)
-        self.text = u''
+        self.document = document.Document()
+        self.document.setText(text)
         self.layouts = []
+        self.cursorTimer = QTimer()
+        self.isShowingCursor = True
+        self.cursorTimer.timeout.connect(self.cursorTimeout)
+        self.cursorTimer.setInterval(500)
+        self.cursorTimer.start()
+
+    def cursorTimeout(self):
+        self.isShowingCursor = not self.isShowingCursor
+        self.update()
 
     def keyPressEvent(self, ev):
         ch = ev.text()
         key = ev.key()
         # \r 属于 string.printable ，所以要优先判断
         if ch and ch in '\r\n':
-            self.text += '\n'
+            self.document.newLine()
         elif key == Qt.Key_Backspace:
-            self.text = self.text[:-1]
+            self.document.delBack()
         elif ch and ch in string.printable:
-            self.text += ch
+            self.document.putChar(ch)
+        elif key == Qt.Key_Up:
+            self.document.cursorUp()
+        elif key == Qt.Key_Down:
+            self.document.cursorDown()
+        elif key == Qt.Key_Left:
+            self.document.cursorLeft()
+        elif key == Qt.Key_Right:
+            self.document.cursorRight()
         self.update()
 
     def layout(self):
-        lines = self.text.split('\n')
+        lines = self.document.lines
         self.layouts = []
         for line in lines:
             self.layoutLine(line)
-            print line
-        print '*' * 40
 
     def layoutLine(self, line):
         fm = self.fontMetrics()
@@ -44,7 +68,6 @@ class Widget(QDialog):
         lt = QTextLayout(line)
         to = lt.textOption()
         to.setWrapMode(QTextOption.WrapAnywhere)
-        print fm.height(), fm.maxWidth()
         to.setTabStop(fm.width(' ') * 8)
         lt.setTextOption(to)
         lt.setFont(self.font())
@@ -65,13 +88,15 @@ class Widget(QDialog):
         self.layout()
         painter = QPainter(self)
         pt = QPoint(0, 0)
-        for lt in self.layouts:
+        for i, lt in enumerate(self.layouts):
             lt.draw(painter, pt)
+            if i == self.document.iLine and self.isShowingCursor:
+                lt.drawCursor(painter, pt, self.document.iCol, 1)
             pt.setY(pt.y() + lt.boundingRect().height())
 
 app = QApplication(sys.argv)
 w = Widget()
-w.setFont(QFont('Courier New', 50))
+w.setFont(QFont('Courier New', 10))
 w.resize(480, 320)
 w.show()
 app.exec_()
